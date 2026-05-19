@@ -1,6 +1,7 @@
 import ToolBadge from './ToolBadge';
 import AudioPlayer from './AudioPlayer';
 
+// Green dumbbell icon shown in the assistant's avatar circle.
 const AssistantAvatarIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect x="0" y="5" width="3" height="6" rx="1" fill="#22c55e"/>
@@ -9,6 +10,7 @@ const AssistantAvatarIcon = () => (
   </svg>
 );
 
+// Grey person silhouette shown in the user's avatar circle.
 const UserAvatarIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <circle cx="8" cy="5.5" r="3" fill="#a1a1aa"/>
@@ -16,6 +18,9 @@ const UserAvatarIcon = () => (
   </svg>
 );
 
+// Renders a single chat bubble with its avatar, optional tool badge, text,
+// and optional audio player (voice mode only).
+// Assistant bubbles appear on the left; user bubbles on the right.
 export default function MessageBubble({ message }) {
   const { role, content, usedTool, toolName, audioUrl } = message;
   const isAssistant = role === 'assistant';
@@ -29,6 +34,7 @@ export default function MessageBubble({ message }) {
       )}
 
       <div className={`bubble ${isAssistant ? 'bubble-assistant' : 'bubble-user'}`}>
+        {/* Show which tool was invoked if the agent used one to answer */}
         {isAssistant && usedTool && <ToolBadge toolName={toolName} />}
         <p className="bubble-text">{content}</p>
         {isAssistant && audioUrl && <AudioPlayer audioUrl={audioUrl} />}

@@ -1,5 +1,6 @@
-// Static knowledge base of common sports supplements.
-// In a production system this could call an external API or vector DB.
+// Static evidence-based knowledge base of common sports supplements.
+// Kept in-memory for simplicity. Could be replaced with a database query
+// or external API call in a production system.
 const supplementDatabase = {
   creatine: {
     name: 'Creatine Monohydrate',
@@ -84,10 +85,13 @@ const supplementDatabase = {
   },
 };
 
+// Looks up a supplement by name using exact match first, then partial match.
+// Normalising the input (lowercase, non-alphanumeric → underscore) handles
+// different phrasings like "Whey Protein", "whey-protein", or "whey protein".
 function searchSupplements({ supplement_name }) {
   const key = supplement_name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
 
-  // Try exact match first, then partial
+  // Try exact key match first, then fall back to substring match
   let data = supplementDatabase[key];
   if (!data) {
     const partialKey = Object.keys(supplementDatabase).find(
@@ -96,6 +100,7 @@ function searchSupplements({ supplement_name }) {
     data = partialKey ? supplementDatabase[partialKey] : null;
   }
 
+  // Return a graceful not-found response instead of throwing an error
   if (!data) {
     return {
       found: false,
@@ -106,6 +111,7 @@ function searchSupplements({ supplement_name }) {
   return { found: true, ...data };
 }
 
+// OpenAI function schema — tells the model how to call this tool
 const definition = {
   type: 'function',
   name: 'searchSupplements',

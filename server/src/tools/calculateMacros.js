@@ -1,10 +1,7 @@
-/**
- * Estimates daily calorie needs and macronutrient targets based on user data.
- * Uses Mifflin-St Jeor for BMR, applies activity multiplier, then distributes macros
- * according to the specified goal.
- */
+// Calculates daily calorie needs and macronutrient targets from user data.
+// Formula: Mifflin-St Jeor for BMR → activity multiplier → goal adjustment → macro split.
 function calculateMacros({ weight_kg, height_cm, age, gender, activity_level, goal }) {
-  // BMR via Mifflin-St Jeor
+  // Mifflin-St Jeor BMR formula — the most accurate simple BMR estimate
   let bmr;
   if (gender === 'female') {
     bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161;
@@ -12,28 +9,30 @@ function calculateMacros({ weight_kg, height_cm, age, gender, activity_level, go
     bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5;
   }
 
+  // Multiply BMR by an activity factor to estimate Total Daily Energy Expenditure
   const activityMultipliers = {
-    sedentary: 1.2,
-    light: 1.375,
-    moderate: 1.55,
-    active: 1.725,
-    very_active: 1.9,
+    sedentary: 1.2,     // desk job, little to no exercise
+    light: 1.375,       // 1–3 days/week of light exercise
+    moderate: 1.55,     // 3–5 days/week of moderate exercise
+    active: 1.725,      // 6–7 days/week of hard training
+    very_active: 1.9,   // physically demanding job + daily training
   };
 
   const multiplier = activityMultipliers[activity_level] || 1.55;
   let tdee = Math.round(bmr * multiplier);
 
-  // Adjust calories for goal
+  // Adjust total calories based on the user's goal
   let calories;
   if (goal === 'lose_weight') {
-    calories = tdee - 500;
+    calories = tdee - 500;   // ~0.5 kg/week deficit
   } else if (goal === 'gain_muscle') {
-    calories = tdee + 300;
+    calories = tdee + 300;   // modest surplus to minimise fat gain
   } else {
-    calories = tdee; // maintain
+    calories = tdee;         // maintenance
   }
 
-  // Macro distribution (protein-forward for athletes)
+  // Higher protein ratio for muscle gain; standard for other goals
+  // Protein and carbs each provide 4 kcal/g; fat provides 9 kcal/g
   const proteinRatio = goal === 'gain_muscle' ? 0.35 : 0.30;
   const fatRatio = 0.25;
   const carbRatio = 1 - proteinRatio - fatRatio;
@@ -51,6 +50,8 @@ function calculateMacros({ weight_kg, height_cm, age, gender, activity_level, go
   };
 }
 
+// OpenAI function schema — tells the model what parameters to collect from the user
+// before calling this tool
 const definition = {
   type: 'function',
   name: 'calculateMacros',

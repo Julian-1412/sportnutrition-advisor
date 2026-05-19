@@ -1,3 +1,4 @@
+// Icon for the text response mode button (three horizontal lines).
 const TextIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
     <rect x="1" y="1.5" width="12" height="2" rx="1"/>
@@ -6,6 +7,7 @@ const TextIcon = () => (
   </svg>
 );
 
+// Icon for the voice response mode button (five vertical bars of varying height).
 const VoiceIcon = () => (
   <svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor">
     <rect x="0" y="5" width="2" height="4" rx="1"/>
@@ -16,6 +18,8 @@ const VoiceIcon = () => (
   </svg>
 );
 
+// Toggle between "text" and "voice" response modes.
+// In voice mode the backend also calls OpenAI TTS and returns an audio URL.
 export default function ResponseModeToggle({ mode, onChange }) {
   return (
     <div className="mode-toggle" role="group" aria-label="Response mode">

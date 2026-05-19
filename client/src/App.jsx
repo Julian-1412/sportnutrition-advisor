@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
 import ResponseModeToggle from './components/ResponseModeToggle';
 import { sendMessage } from './services/api';
 import './styles/app.css';
 
-const SESSION_ID = crypto.randomUUID();
+// Reuse the same session ID across page reloads so the server can look up
+// the existing conversation history. Generated once and stored in localStorage.
+const _stored = localStorage.getItem('voiceagent_session_id');
+const SESSION_ID = _stored || crypto.randomUUID();
+if (!_stored) localStorage.setItem('voiceagent_session_id', SESSION_ID);
 
+// Small dumbbell icon used in the header brand area.
 const LogoIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
     <rect x="0" y="6" width="4" height="8" rx="1.5" fill="#22c55e"/>
@@ -15,6 +20,7 @@ const LogoIcon = () => (
   </svg>
 );
 
+// Pre-written prompts shown as clickable chips on the empty state screen.
 const SUGGESTIONS = [
   'Calculate my macros for muscle gain',
   'Tell me about creatine benefits',
@@ -22,12 +28,29 @@ const SUGGESTIONS = [
   'How much protein do I need daily?',
 ];
 
+// Root component — owns global state (messages, mode, loading, error) and
+// orchestrates communication between the input, chat window, and API layer.
 export default function App() {
-  const [messages, setMessages] = useState([]);
+  // Initialize from localStorage so the chat survives page reloads.
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('voiceagent_messages');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [mode, setMode] = useState('text');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Persist the full message list to localStorage after every update.
+  useEffect(() => {
+    localStorage.setItem('voiceagent_messages', JSON.stringify(messages));
+  }, [messages]);
+
+  // Appends the user message optimistically, calls the API, then appends
+  // the agent reply (including any tool metadata and optional audio URL).
   async function handleSend(text) {
     setError(null);
     setMessages((prev) => [...prev, { role: 'user', content: text }]);
