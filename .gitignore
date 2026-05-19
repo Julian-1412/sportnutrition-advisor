@@ -1,0 +1,6 @@
+node_modules/
+.env
+dist/
+server/audios/*.mp3
+server/vector-index/
+.DS_Store
